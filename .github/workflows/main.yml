@@ -8,8 +8,8 @@ jobs:
   build:
     name: Start Building...
     runs-on: windows-latest
-    timeout-minutes: 350  # Increased time limit
-    
+    timeout-minutes: 350
+
     steps:
       - name: Direct Avica Setup
         run: |
@@ -24,27 +24,20 @@ jobs:
           # Install Python packages
           python.exe -m pip install requests pyautogui telegraph --quiet
           
-          # Enable RDP
+          # Enable RDP and set user password
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-          
-          # Set user password
           net user runneradmin TheDisa1a
           
           # Start Avica
           Write-Host "⚡ Starting Avica..." -ForegroundColor Yellow
-          python -c "import pyautogui as pag; pag.click(897, 64, duration=2)" 2>$null
-          Start-Process "Avica_setup.exe"
+          # Use Start-Process with -FilePath and wrap it to handle paths with spaces
+          Start-Process -FilePath ".\Avica_setup.exe"
           
           # Run setup script
           python setup.py
           
           Write-Host "✅ Setup completed! Check for GoFile link!" -ForegroundColor Green
-          
-      - name: Setup System User
-        run: |
-          net user runneradmin TheDisa1a
-          Write-Host "✅ System user configured" -ForegroundColor Green
           
       - name: Show Connection Info
         run: |
@@ -69,6 +62,4 @@ jobs:
         run: cmd /c show.bat
         
       - name: Keep Session Active
-        run: |
-          Write-Host "🚀 Avica is starting... Look for CONNECTION ID below!" -ForegroundColor Yellow
-          cmd /c loop.bat
+        run: cmd /c loop.bat
